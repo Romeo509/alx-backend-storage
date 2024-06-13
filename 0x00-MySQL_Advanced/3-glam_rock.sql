@@ -2,7 +2,7 @@
 -- This script lists all bands with Glam rock as their main style, ranked by their longevity.
 
 SELECT 
-    name AS band_name,
+    band_name,  -- Assuming the correct column name for band name
     CASE
         WHEN split IS NOT NULL THEN YEAR(split) - YEAR(formed)
         ELSE 2022 - YEAR(formed)
