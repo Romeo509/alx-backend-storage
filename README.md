@@ -1,16 +1,2 @@
-# SQL Project
-
-This project contains SQL scripts to perform various database tasks using MySQL 5.7.
-
-## Files
-- `0-uniq_users.sql`: Script to create a `users` table with specific attributes.
-
-## Requirements
-- MySQL 5.7 (version 5.7.30)
-- Ubuntu 18.04 LTS
-
-## Usage
-To execute the SQL script, use the following command:
-
-```bash
-mysql -u username -p database_name < 0-uniq_users.sql
+<h>0x00-MySQL_Advanced</h>
+The project involves designing and implementing a robust student management system using SQL. It includes creating tables for users, projects, and corrections, developing stored procedures for calculating average and weighted scores, and optimizing database performance with indexing and efficient queries. The goal is to ensure accurate data management and facilitate insightful analysis of student performance.
