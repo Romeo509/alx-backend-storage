@@ -1,0 +1,2 @@
+// Creates or switches to the MongoDB database 'my_db'
+use my_db
