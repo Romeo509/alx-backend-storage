@@ -1,0 +1,5 @@
+// Updates documents in the 'school' collection where 'name' is 'Holberton school' to add 'address' field
+db.school.updateMany(
+    { name: "Holberton school" },
+    { $set: { address: "972 Mission street" } }
+)
