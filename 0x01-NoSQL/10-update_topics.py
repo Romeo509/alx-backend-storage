@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """
-This module provides a function to update the topics of a school document based on the name.
+This module provides a function to update the topics
+of a school document based on the name.
 """
+
 
 def update_topics(mongo_collection, name, topics):
     """
