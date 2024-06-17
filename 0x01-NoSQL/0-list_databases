@@ -1,2 +1,4 @@
+#!/bin/bash
+
 // Lists all databases.
 show dbs;
