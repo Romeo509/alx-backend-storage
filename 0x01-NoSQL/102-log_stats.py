@@ -1,49 +1,41 @@
 #!/usr/bin/env python3
-""" MongoDB Operations with Python using pymongo """
+""" MongoDB Operations using Python and pymongo """
 
 from pymongo import MongoClient
 
+def display_nginx_stats(nginx_collection):
+    """Displays various statistics from Nginx logs."""
+    total_logs = nginx_collection.count_documents({})
+    print('{} logs'.format(total_logs))
+    
+    print('Methods:')
+    methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
+    for method in methods:
+        count = nginx_collection.count_documents({'method': method})
+        print('\tmethod {}: {}'.format(method, count))
+    
+    status_check_count = nginx_collection.count_documents({
+        'method': 'GET', 'path': '/status'
+    })
+    print('{} status check'.format(status_check_count))
 
-def count_documents(collection):
-    return collection.count_documents({})
+def display_top_ips(nginx_collection):
+    """Shows the top 10 IPs found in Nginx logs."""
+    print('IPs:')
+    top_ips = nginx_collection.aggregate([
+        {'$group': {'_id': "$ip", 'totalRequests': {'$sum': 1}}},
+        {'$sort': {'totalRequests': -1}},
+        {'$limit': 10}
+    ])
+    for ip in top_ips:
+        print('\t{}: {}'.format(ip['_id'], ip['totalRequests']))
 
-
-def count_method_documents(collection, method):
-    return collection.count_documents({"method": method})
-
-
-def count_status_check_documents(collection):
-    return collection.count_documents({"method": "GET", "path": "/status"})
-
-
-def get_top_ips(collection):
-    pipeline = [
-        {"$group": {"_id": "$ip", "count": {"$sum": 1}}},
-        {"$sort": {"count": -1}},
-        {"$limit": 10}
-    ]
-    return list(collection.aggregate(pipeline))
-
-
-if __name__ == "__main__":
+def main():
+    """Connects to MongoDB and displays Nginx log stats."""
     client = MongoClient('mongodb://127.0.0.1:27017')
-    db = client.logs
-    collection = db.nginx
+    nginx_collection = client.logs.nginx
+    display_nginx_stats(nginx_collection)
+    display_top_ips(nginx_collection)
 
-    total_logs = count_documents(collection)
-    print(f"{total_logs} logs")
-
-    print("Methods:")
-    for method in ["GET", "POST", "PUT", "PATCH", "DELETE"]:
-        count = count_method_documents(collection, method)
-        print(f"    method {method}: {count}")
-
-    status_check_count = count_status_check_documents(collection)
-    print(f"{status_check_count} status check")
-
-    print("IPs:")
-    top_ips = get_top_ips(collection)
-    for ip_info in top_ips:
-        ip = ip_info['_id']
-        count = ip_info['count']
-        print(f"    {ip}: {count}")
+if __name__ == '__main__':
+    main()
