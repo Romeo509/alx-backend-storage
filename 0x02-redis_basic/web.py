@@ -1,29 +1,37 @@
 #!/usr/bin/env python3
-"""
-web.py
-"""
-
-import requests
 import redis
-import time
+import requests
+from functools import wraps
+from typing import Callable
+
+# Initialize Redis connection
+cache = redis.Redis()
 
 
-redis_client = redis.Redis()
+def cache_request(func: Callable) -> Callable:
+    """Decorator for caching HTTP requests and counting access."""
+    @wraps(func)
+    def wrapper(url: str) -> str:
+        cache.incr(f'count:{url}')
+        cached_response = cache.get(f'result:{url}')
+        if cached_response:
+            return cached_response.decode('utf-8')
+        response = func(url)
+        cache.setex(f'result:{url}', 10, response)
+        return response
+    return wrapper
 
 
+@cache_request
 def get_page(url: str) -> str:
-    """Fetches HTML content from a URL and caches
-    the result with expiration."""
+    """Fetches HTML content of a URL."""
+    return requests.get(url).text
 
-    redis_client.incr(f"count:{url}")
 
-    cached_content = redis_client.get(f"content:{url}")
-    if cached_content:
-        return cached_content.decode('utf-8')
-
-    response = requests.get(url)
-    html_content = response.text
-
-    redis_client.setex(f"content:{url}", 10, html_content)
-
-    return html_content
+# Example usage
+if __name__ == "__main__":
+    test_url = (
+        "http://slowwly.robertomurray.co.uk/delay/5000/"
+        "url/http://www.google.com"
+    )
+    print(get_page(test_url))  # Fetch and print the content of the URL
