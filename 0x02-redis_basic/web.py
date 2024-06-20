@@ -1,37 +1,35 @@
 #!/usr/bin/env python3
+"""Module containing function to return HTML
+content of a particular URL"""
 import redis
 import requests
 from functools import wraps
-from typing import Callable
 
-# Initialize Redis connection
-cache = redis.Redis()
+data = redis.Redis()
 
 
-def cache_request(func: Callable) -> Callable:
-    """Decorator for caching HTTP requests and counting access."""
-    @wraps(func)
-    def wrapper(url: str) -> str:
-        cache.incr(f'count:{url}')
-        cached_response = cache.get(f'result:{url}')
-        if cached_response:
-            return cached_response.decode('utf-8')
-        response = func(url)
-        cache.setex(f'result:{url}', 10, response)
-        return response
+def cached_content_fun(method):
+    """Function that returns html content"""
+
+    @wraps(method)
+    def wrapper(url: str):
+        cached_content = data.get(f"cached:{url}")
+        if cached_content:
+            return cached_content.decode('utf-8')
+
+        content = method(url)
+        data.setex(f"cached:{url}", 10, content)
+        return content
+
     return wrapper
 
 
-@cache_request
+@cached_content_fun
 def get_page(url: str) -> str:
-    """Fetches HTML content of a URL."""
-    return requests.get(url).text
+    """Function thattracks how many times a particular URL was accessed"""
 
-
-# Example usage
-if __name__ == "__main__":
-    test_url = (
-        "http://slowwly.robertomurray.co.uk/delay/5000/"
-        "url/http://www.google.com"
-    )
-    print(get_page(test_url))  # Fetch and print the content of the URL
+    count = data.incr(f"count:{url}")
+    content = requests.get(url).text
+    # print(content)
+    # print("Count: {}".format(count))
+    return content
