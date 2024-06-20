@@ -76,6 +76,7 @@ def call_history(method: Callable) -> Callable:
 
 
 class Cache:
+    """ Test documentaion """
     def __init__(self):
         """
         Initialize the Cache class.
