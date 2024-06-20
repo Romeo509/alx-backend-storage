@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Module containing function to return HTML
-content of a particular URL"""
+"""Module for fetching and caching
+HTML content from URLs."""
+
 import redis
 import requests
 from functools import wraps
@@ -9,7 +10,7 @@ data = redis.Redis()
 
 
 def cached_content_fun(method):
-    """Function that returns html content"""
+    """Fetches HTML content of a url"""
 
     @wraps(method)
     def wrapper(url: str):
@@ -26,10 +27,9 @@ def cached_content_fun(method):
 
 @cached_content_fun
 def get_page(url: str) -> str:
-    """Function thattracks how many times a particular URL was accessed"""
+    """tracks how many times a particular URL was accessed"""
 
     count = data.incr(f"count:{url}")
     content = requests.get(url).text
-    # print(content)
-    # print("Count: {}".format(count))
+
     return content
