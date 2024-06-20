@@ -149,25 +149,22 @@ class Cache:
         return self.get(key, int)
 
 
-def replay(fn: Callable):
-    '''display the history of calls of a particular function.'''
-    r = redis.Redis()
-    func_name = fn.__qualname__
-    c = r.get(func_name)
-    try:
-        c = int(c.decode("utf-8"))
-    except Exception:
-        c = 0
-    print("{} was called {} times:".format(func_name, c))
-    inputs = r.lrange("{}:inputs".format(func_name), 0, -1)
-    outputs = r.lrange("{}:outputs".format(func_name), 0, -1)
-    for inp, outp in zip(inputs, outputs):
-        try:
-            inp = inp.decode("utf-8")
-        except Exception:
-            inp = ""
-        try:
-            outp = outp.decode("utf-8")
-        except Exception:
-            outp = ""
-        print("{}(*{}) -> {}".format(func_name, inp, outp))
+def replay(method: Callable) -> None:
+    """
+    Display the history of calls of a particular function.
+
+    Args:
+        method (Callable): The method whose history to display.
+    """
+    cache = method.__self__
+    input_key = method.__qualname__ + ":inputs"
+    output_key = method.__qualname__ + ":outputs"
+
+    inputs = cache._redis.lrange(input_key, 0, -1)
+    outputs = cache._redis.lrange(output_key, 0, -1)
+
+    print(f"{method.__qualname__} was called {len(inputs)} times:")
+    for input_data, output_data in zip(inputs, outputs):
+        print(f"{method.__qualname__}("
+              f"*{input_data.decode('utf-8')}) -> "
+              f"{output_data.decode('utf-8')}")
